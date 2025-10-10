@@ -80,6 +80,9 @@ def generate_sleep(start="2025-01-01", days=365, seed=7, caffeine=None):
         - late_mg * 0.004
     )
 
+    awakenings = rng.poisson(1.2 + late_mg * 0.006)
+    efficiency = np.clip(rng.normal(91, 3, days) - awakenings * 1.2, 70, 99)
+
     start_ts = nights + pd.to_timedelta(bed_hour, unit="h")
     end_ts = start_ts + pd.to_timedelta(duration, unit="h")
 
@@ -87,6 +90,8 @@ def generate_sleep(start="2025-01-01", days=365, seed=7, caffeine=None):
         {
             "start": start_ts.round("min"),
             "end": end_ts.round("min"),
+            "awakenings": awakenings,
+            "efficiency": efficiency.round(1),
         }
     )
 
