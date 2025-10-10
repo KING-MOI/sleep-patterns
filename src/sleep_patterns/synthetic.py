@@ -86,7 +86,7 @@ def generate_sleep(start="2025-01-01", days=365, seed=7, caffeine=None):
     start_ts = nights + pd.to_timedelta(bed_hour, unit="h")
     end_ts = start_ts + pd.to_timedelta(duration, unit="h")
 
-    return pd.DataFrame(
+    out = pd.DataFrame(
         {
             "start": start_ts.round("min"),
             "end": end_ts.round("min"),
@@ -94,6 +94,9 @@ def generate_sleep(start="2025-01-01", days=365, seed=7, caffeine=None):
             "efficiency": efficiency.round(1),
         }
     )
+    # the watch was on the charger some nights
+    worn = rng.random(days) > 0.03
+    return out[worn].reset_index(drop=True)
 
 
 def generate(start="2025-01-01", days=365, seed=7):
