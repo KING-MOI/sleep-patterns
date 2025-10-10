@@ -59,15 +59,25 @@ def generate_caffeine(start="2025-01-01", days=365, seed=7):
     return out
 
 
-def generate_sleep(start="2025-01-01", days=365, seed=7):
+def _late_caffeine(caffeine, nights, after_hour=14):
+    late = caffeine[caffeine["timestamp"].dt.hour >= after_hour]
+    per_day = late.groupby(late["timestamp"].dt.normalize())["caffeine_mg"].sum()
+    return per_day.reindex(nights, fill_value=0).to_numpy()
+
+
+def generate_sleep(start="2025-01-01", days=365, seed=7, caffeine=None):
     rng = np.random.default_rng(seed)
     nights = pd.date_range(start, periods=days, freq="D")
-
     weekday = nights.weekday.to_numpy()
 
-    bed_hour = rng.normal(23.1, 0.5, days) + BEDTIME_SHIFT[weekday]
+    late_mg = np.zeros(days) if caffeine is None else _late_caffeine(caffeine, nights)
+
+    bed_hour = rng.normal(23.1, 0.5, days) + BEDTIME_SHIFT[weekday] + late_mg * 0.002
     duration = (
-        rng.normal(7.2, 0.6, days) + DURATION_SHIFT[weekday] - _seasonal_loss(nights)
+        rng.normal(7.2, 0.6, days)
+        + DURATION_SHIFT[weekday]
+        - _seasonal_loss(nights)
+        - late_mg * 0.004
     )
 
     start_ts = nights + pd.to_timedelta(bed_hour, unit="h")
@@ -79,3 +89,9 @@ def generate_sleep(start="2025-01-01", days=365, seed=7):
             "end": end_ts.round("min"),
         }
     )
+
+
+def generate(start="2025-01-01", days=365, seed=7):
+    caffeine = generate_caffeine(start, days, seed)
+    sleep = generate_sleep(start, days, seed, caffeine=caffeine)
+    return sleep, caffeine
