@@ -96,7 +96,21 @@ def generate_sleep(start="2025-01-01", days=365, seed=7, caffeine=None):
     )
     # the watch was on the charger some nights
     worn = rng.random(days) > 0.03
-    return out[worn].reset_index(drop=True)
+    out = out[worn]
+
+    # and a handful of junk sessions: afternoon naps and a day it never came off
+    junk_days = rng.choice(nights, size=6, replace=False)
+    junk_start = junk_days + pd.to_timedelta(rng.uniform(13, 16, 6), unit="h")
+    junk_len = np.array([0.4, 0.6, 0.3, 0.5, 15.5, 0.7])
+    junk = pd.DataFrame(
+        {
+            "start": junk_start.round("min"),
+            "end": (junk_start + pd.to_timedelta(junk_len, unit="h")).round("min"),
+            "awakenings": 0,
+            "efficiency": 95.0,
+        }
+    )
+    return pd.concat([out, junk]).sort_values("start").reset_index(drop=True)
 
 
 def generate(start="2025-01-01", days=365, seed=7):
