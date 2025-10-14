@@ -117,3 +117,25 @@ def generate(start="2025-01-01", days=365, seed=7):
     caffeine = generate_caffeine(start, days, seed)
     sleep = generate_sleep(start, days, seed, caffeine=caffeine)
     return sleep, caffeine
+
+
+def main(argv=None):
+    import argparse
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--out", type=Path, default=Path("data"))
+    parser.add_argument("--start", default="2025-01-01")
+    parser.add_argument("--days", type=int, default=365)
+    parser.add_argument("--seed", type=int, default=7)
+    args = parser.parse_args(argv)
+
+    sleep, caffeine = generate(args.start, args.days, args.seed)
+    args.out.mkdir(parents=True, exist_ok=True)
+    sleep.to_csv(args.out / "sleep_log.csv", index=False)
+    caffeine.to_csv(args.out / "caffeine_log.csv", index=False)
+    print(f"wrote {len(sleep)} sessions and {len(caffeine)} drinks to {args.out}/")
+
+
+if __name__ == "__main__":
+    main()
