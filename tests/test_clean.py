@@ -1,6 +1,6 @@
 import pandas as pd
 
-from sleep_patterns.clean import add_derived
+from sleep_patterns.clean import add_derived, nightly
 
 
 def _sessions(*pairs):
@@ -22,3 +22,13 @@ def test_after_midnight_bedtime_belongs_to_previous_night():
     df = add_derived(_sessions(("2025-03-08 00:40", "2025-03-08 09:10")))
     assert df["night"].iloc[0] == pd.Timestamp("2025-03-07")
     assert df["weekday"].iloc[0] == "Friday"
+
+
+def test_nightly_drops_naps_and_stuck_sessions():
+    raw = _sessions(
+        ("2025-03-07 23:30", "2025-03-08 07:00"),
+        ("2025-03-08 14:00", "2025-03-08 14:30"),
+        ("2025-03-09 13:00", "2025-03-10 05:00"),
+    )
+    out = nightly(raw)
+    assert list(out["night"]) == [pd.Timestamp("2025-03-07")]
