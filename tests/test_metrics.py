@@ -1,6 +1,6 @@
 import pandas as pd
 
-from sleep_patterns.metrics import WEEKDAYS, weekday_summary, worst_weekday
+from sleep_patterns.metrics import WEEKDAYS, sleep_debt, weekday_summary, worst_weekday
 
 
 def _nights(hours, start="2025-01-06"):
@@ -25,3 +25,18 @@ def test_weekday_summary_is_monday_first():
 def test_worst_weekday_picks_lowest_mean():
     hours = [7, 7, 7, 7, 7, 7, 5] * 2
     assert worst_weekday(_nights(hours)) == "Sunday"
+
+
+def test_sleep_debt_rolling_window():
+    debt = sleep_debt(_nights([6.5] * 14), target=7.5, window=7)
+    assert debt["deficit"].eq(1.0).all()
+    assert debt["debt"].iloc[-1] == 7.0
+    assert debt["cumulative"].iloc[-1] == 14.0
+
+
+def test_sleep_debt_gap_does_not_count_as_rest():
+    n = _nights([6.5] * 14).drop(index=[5, 6])
+    debt = sleep_debt(n, target=7.5, window=7)
+    assert len(debt) == 14
+    assert debt["deficit"].isna().sum() == 2
+    assert debt["debt"].iloc[7] == 7.0
