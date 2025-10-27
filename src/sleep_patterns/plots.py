@@ -4,6 +4,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 
+import matplotlib.dates as mdates  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 
 BLUE = "#2a78d6"
@@ -69,4 +70,27 @@ def weekday_bars(summary, ax=None):
     ax.set_ylabel("mean hours asleep")
     ax.set_title(f"{worst} night is the shortest")
     ax.grid(axis="x", visible=False)
+    return ax.figure
+
+
+def debt_line(debt, window=14, title="Rolling sleep debt", ax=None):
+    """Rolling sleep debt across the year."""
+    ax = ax or plt.subplots(figsize=(10, 4))[1]
+    ax.plot(debt.index, debt["debt"], color=BLUE)
+    ax.axhline(0, color=BASELINE, linewidth=1)
+    peak = debt["debt"].idxmax()
+    ax.annotate(
+        f"peak {debt['debt'].max():.1f} h ({peak:%d %b})",
+        (peak, debt["debt"].max()),
+        xytext=(0, 10),
+        textcoords="offset points",
+        ha="center",
+        color=INK,
+    )
+    ax.plot(peak, debt["debt"].max(), "o", color=BLUE, markersize=7, markeredgecolor=SURFACE)
+    ax.set_ylim(top=debt["debt"].max() * 1.15)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
+    ax.set_ylabel(f"hours owed, last {window} nights")
+    ax.set_title(title)
+    ax.margins(x=0.01)
     return ax.figure
