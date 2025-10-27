@@ -94,3 +94,30 @@ def debt_line(debt, window=14, title="Rolling sleep debt", ax=None):
     ax.set_title(title)
     ax.margins(x=0.01)
     return ax.figure
+
+
+def caffeine_scatter(merged, x="late_mg", ax=None):
+    """Afternoon caffeine against that night's sleep, with a least-squares line."""
+    import numpy as np
+
+    ax = ax or plt.subplots(figsize=(7, 5))[1]
+    ax.scatter(
+        merged[x], merged["hours"], s=28, color=BLUE, alpha=0.55, edgecolors=SURFACE, linewidths=0.8
+    )
+    slope, intercept = np.polyfit(merged[x], merged["hours"], 1)
+    xs = np.array([0, merged[x].max()])
+    ax.plot(xs, intercept + slope * xs, color=ORANGE)
+    r = merged[[x, "hours"]].corr().iloc[0, 1]
+    ax.text(
+        0.97,
+        0.95,
+        f"r = {r:.2f}\n{slope * 100:+.2f} h per 100 mg",
+        transform=ax.transAxes,
+        ha="right",
+        va="top",
+        color=INK,
+    )
+    ax.set_xlabel("caffeine after 2pm (mg)")
+    ax.set_ylabel("hours asleep that night")
+    ax.set_title("Afternoon caffeine costs sleep")
+    return ax.figure
