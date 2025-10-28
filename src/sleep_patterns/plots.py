@@ -121,3 +121,25 @@ def caffeine_scatter(merged, x="late_mg", ax=None):
     ax.set_ylabel("hours asleep that night")
     ax.set_title("Afternoon caffeine costs sleep")
     return ax.figure
+
+
+def calendar_heatmap(nights, ax=None):
+    """Every night of the year: weeks across, weekdays down."""
+    from matplotlib.colors import LinearSegmentedColormap
+
+    cmap = LinearSegmentedColormap.from_list("blues", ["#cde2fb", "#6da7ec", "#256abf", "#0d366b"])
+    s = nights.set_index("night")["hours"].asfreq("D")
+    week = ((s.index - s.index[0]).days + s.index[0].weekday()) // 7
+    grid = s.groupby([s.index.weekday, week]).first().unstack()
+
+    ax = ax or plt.subplots(figsize=(12, 2.8))[1]
+    mesh = ax.pcolormesh(grid.columns, grid.index, grid.values, cmap=cmap, edgecolors=SURFACE, linewidth=1.5)
+    ax.set_yticks(range(7), ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
+    ax.invert_yaxis()
+    ax.set_xlabel("week of the year")
+    ax.grid(False)
+    ax.spines[["left", "bottom"]].set_visible(False)
+    ax.tick_params(length=0)
+    ax.figure.colorbar(mesh, ax=ax, label="hours", pad=0.01, aspect=12)
+    ax.set_title("Hours asleep, night by night")
+    return ax.figure
