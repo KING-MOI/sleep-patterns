@@ -68,7 +68,7 @@ def _late_caffeine(caffeine, nights, after_hour=14):
 def generate_sleep(start="2025-01-01", days=365, seed=7, caffeine=None):
     rng = np.random.default_rng(seed)
     nights = pd.date_range(start, periods=days, freq="D")
-    weekday = nights.weekday.to_numpy()
+    weekday = nights.day_of_week.to_numpy()
 
     late_mg = np.zeros(days) if caffeine is None else _late_caffeine(caffeine, nights)
 

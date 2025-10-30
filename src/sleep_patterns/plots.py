@@ -129,8 +129,8 @@ def calendar_heatmap(nights, ax=None):
 
     cmap = LinearSegmentedColormap.from_list("blues", ["#cde2fb", "#6da7ec", "#256abf", "#0d366b"])
     s = nights.set_index("night")["hours"].asfreq("D")
-    week = ((s.index - s.index[0]).days + s.index[0].weekday()) // 7
-    grid = s.groupby([s.index.weekday, week]).first().unstack()
+    week = ((s.index - s.index[0]).days + s.index[0].day_of_week) // 7
+    grid = s.groupby([s.index.day_of_week, week]).first().unstack()
 
     ax = ax or plt.subplots(figsize=(12, 2.8))[1]
     mesh = ax.pcolormesh(grid.columns, grid.index, grid.values, cmap=cmap, edgecolors=SURFACE, linewidth=1.5)
