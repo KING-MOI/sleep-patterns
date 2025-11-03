@@ -1,11 +1,7 @@
 """Matplotlib charts for the README and notebooks."""
 
-import matplotlib
-
-matplotlib.use("Agg")
-
-import matplotlib.dates as mdates  # noqa: E402
-import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 
 BLUE = "#2a78d6"
 ORANGE = "#eb6834"
