@@ -139,3 +139,31 @@ def calendar_heatmap(nights, ax=None):
     ax.figure.colorbar(mesh, ax=ax, label="hours", pad=0.01, aspect=12)
     ax.set_title("Hours asleep, night by night")
     return ax.figure
+
+
+def cutoff_bars(buckets, ax=None):
+    """Mean hours by when the last drink was; afternoon buckets in orange."""
+    ax = ax or plt.subplots(figsize=(7, 4))[1]
+    late = [label.startswith(("14", "16")) for label in buckets.index]
+    bars = ax.bar(
+        buckets.index,
+        buckets["mean_hours"],
+        color=[ORANGE if x else BLUE for x in late],
+        width=0.6,
+    )
+    for bar, n in zip(bars, buckets["nights"]):
+        ax.annotate(
+            f"n={n}",
+            (bar.get_x() + bar.get_width() / 2, bar.get_height()),
+            xytext=(0, 4),
+            textcoords="offset points",
+            ha="center",
+            color=INK_2,
+            fontsize=9,
+        )
+    ax.set_ylim(0, buckets["mean_hours"].max() + 1)
+    ax.set_xlabel("last caffeinated drink of the day")
+    ax.set_ylabel("mean hours asleep")
+    ax.set_title("Coffee after 2pm, shorter nights")
+    ax.grid(axis="x", visible=False)
+    return ax.figure

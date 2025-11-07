@@ -6,7 +6,7 @@
 from pathlib import Path
 
 from . import plots
-from .caffeine import with_caffeine
+from .caffeine import by_last_drink, with_caffeine
 from .clean import nightly
 from .io import load_caffeine, load_sleep
 from .metrics import sleep_debt, weekday_summary
@@ -24,6 +24,7 @@ def build(out=ASSETS):
         plots.save(plots.debt_line(sleep_debt(nights)), out / "sleep_debt.png"),
         plots.save(plots.caffeine_scatter(merged), out / "caffeine.png"),
         plots.save(plots.calendar_heatmap(nights), out / "calendar.png"),
+        plots.save(plots.cutoff_bars(by_last_drink(merged)), out / "caffeine_cutoff.png"),
     ]
 
 
