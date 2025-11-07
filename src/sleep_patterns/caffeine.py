@@ -32,3 +32,16 @@ def caffeine_correlations(merged, cols=("total_mg", "late_mg", "drinks")):
         for method in ("pearson", "spearman")
     }
     return pd.concat(rows, names=["method", "caffeine"])
+
+
+def by_last_drink(merged, edges=(0, 12, 14, 16, 24)):
+    """Mean sleep grouped by when the last caffeinated drink of the day was."""
+    labels = [f"{lo:02d}-{hi:02d}h" for lo, hi in zip(edges, edges[1:])]
+    bucket = pd.cut(merged["last_drink"], edges, labels=labels, right=False)
+    bucket = bucket.cat.add_categories("none").fillna("none")
+    return (
+        merged.groupby(bucket, observed=False)["hours"]
+        .agg(["size", "mean"])
+        .rename(columns={"size": "nights", "mean": "mean_hours"})
+        .reindex(["none", *labels])
+    )

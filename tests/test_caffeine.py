@@ -1,6 +1,11 @@
 import pandas as pd
 
-from sleep_patterns.caffeine import caffeine_correlations, daily_caffeine, with_caffeine
+from sleep_patterns.caffeine import (
+    by_last_drink,
+    caffeine_correlations,
+    daily_caffeine,
+    with_caffeine,
+)
 
 
 def _log(*rows):
@@ -42,3 +47,14 @@ def test_correlation_sign():
     corr = caffeine_correlations(with_caffeine(nights, log))
     assert corr.loc[("pearson", "late_mg"), "hours"] < -0.9
     assert corr.loc[("spearman", "total_mg"), "hours"] == -1.0
+
+
+def test_by_last_drink_buckets_and_no_caffeine_days():
+    nights = _nights(["2025-02-03", "2025-02-04", "2025-02-05"], [5.0, 7.0, 8.0])
+    log = _log(("2025-02-03 17:00", 95), ("2025-02-04 09:00", 95))
+    out = by_last_drink(with_caffeine(nights, log))
+    assert list(out.index) == ["none", "00-12h", "12-14h", "14-16h", "16-24h"]
+    assert out.loc["none", "mean_hours"] == 8.0
+    assert out.loc["00-12h", "mean_hours"] == 7.0
+    assert out.loc["16-24h", "mean_hours"] == 5.0
+    assert out.loc["12-14h", "nights"] == 0
