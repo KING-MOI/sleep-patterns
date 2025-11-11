@@ -4,6 +4,7 @@ from sleep_patterns.caffeine import (
     by_last_drink,
     caffeine_correlations,
     daily_caffeine,
+    late_caffeine_effect,
     with_caffeine,
 )
 
@@ -58,3 +59,18 @@ def test_by_last_drink_buckets_and_no_caffeine_days():
     assert out.loc["00-12h", "mean_hours"] == 7.0
     assert out.loc["16-24h", "mean_hours"] == 5.0
     assert out.loc["12-14h", "nights"] == 0
+
+
+def test_late_caffeine_effect_removes_month_confound():
+    import numpy as np
+
+    rng = np.random.default_rng(0)
+    night = pd.date_range("2025-01-01", periods=365, freq="D")
+    busy = night.month.isin([3, 4, 11])
+    late_mg = rng.uniform(0, 100, 365) + busy * 150
+    hours = 7.5 - 0.004 * late_mg - busy * 0.8 + rng.normal(0, 0.1, 365)
+    merged = pd.DataFrame({"night": night, "late_mg": late_mg, "hours": hours})
+
+    raw = np.polyfit(late_mg, hours, 1)[0]
+    assert raw < -0.006
+    assert abs(late_caffeine_effect(merged) - -0.004) < 0.0005

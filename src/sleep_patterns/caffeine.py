@@ -45,3 +45,22 @@ def by_last_drink(merged, edges=(0, 12, 14, 16, 24)):
         .rename(columns={"size": "nights", "mean": "mean_hours"})
         .reindex(["none", *labels])
     )
+
+
+def late_caffeine_effect(merged, x="late_mg"):
+    """Hours of sleep per mg of late caffeine, holding month and weekday fixed.
+
+    Busy months bring both more coffee and less sleep, so the raw slope
+    overstates the effect. Month and weekday dummies soak that up.
+    """
+    import numpy as np
+
+    night = merged["night"]
+    dummies = pd.get_dummies(
+        pd.DataFrame({"month": night.dt.month, "weekday": night.dt.day_of_week}).astype(str),
+        drop_first=True,
+        dtype=float,
+    )
+    X = np.column_stack([np.ones(len(merged)), merged[x].to_numpy(float), dummies.to_numpy()])
+    coef, *_ = np.linalg.lstsq(X, merged["hours"].to_numpy(float), rcond=None)
+    return coef[1]
