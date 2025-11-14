@@ -43,13 +43,17 @@ def generate_caffeine(start="2025-01-01", days=365, seed=7):
     crunch = _seasonal_loss(days_idx) > 0
 
     rows = []
-    for day, in_crunch in zip(days_idx, crunch):
+    for day, in_crunch in zip(days_idx, crunch, strict=True):
         n = rng.poisson(2.6 if in_crunch else 1.8)
         # first drink in the morning, the rest spread over the day
-        hours = np.sort(np.concatenate([
-            rng.normal(8.0, 0.6, min(n, 1)),
-            rng.uniform(10, 19.5 if in_crunch else 17.5, max(n - 1, 0)),
-        ]))
+        hours = np.sort(
+            np.concatenate(
+                [
+                    rng.normal(8.0, 0.6, min(n, 1)),
+                    rng.uniform(10, 19.5 if in_crunch else 17.5, max(n - 1, 0)),
+                ]
+            )
+        )
         for h in hours:
             drink = rng.choice(list(DRINKS), p=DRINK_WEIGHTS)
             rows.append((day + pd.Timedelta(hours=float(h)), drink, DRINKS[drink]))

@@ -49,10 +49,8 @@ def weekday_bars(summary, ax=None):
     ax = ax or plt.subplots(figsize=(8, 4))[1]
     worst = summary["mean_hours"].idxmin()
     colors = [ORANGE if day == worst else BLUE for day in summary.index]
-    bars = ax.bar(
-        [d[:3] for d in summary.index], summary["mean_hours"], color=colors, width=0.6
-    )
-    for bar, day in zip(bars, summary.index):
+    bars = ax.bar([d[:3] for d in summary.index], summary["mean_hours"], color=colors, width=0.6)
+    for bar, day in zip(bars, summary.index, strict=True):
         if day == worst:
             ax.annotate(
                 f"{bar.get_height():.2f} h",
@@ -129,7 +127,9 @@ def calendar_heatmap(nights, ax=None):
     grid = s.groupby([s.index.day_of_week, week]).first().unstack()
 
     ax = ax or plt.subplots(figsize=(12, 2.8))[1]
-    mesh = ax.pcolormesh(grid.columns, grid.index, grid.values, cmap=cmap, edgecolors=SURFACE, linewidth=1.5)
+    mesh = ax.pcolormesh(
+        grid.columns, grid.index, grid.values, cmap=cmap, edgecolors=SURFACE, linewidth=1.5
+    )
     ax.set_yticks(range(7), ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"])
     ax.invert_yaxis()
     ax.set_xlabel("week of the year")
@@ -151,7 +151,7 @@ def cutoff_bars(buckets, ax=None):
         color=[ORANGE if x else BLUE for x in late],
         width=0.6,
     )
-    for bar, n in zip(bars, buckets["nights"]):
+    for bar, n in zip(bars, buckets["nights"], strict=True):
         ax.annotate(
             f"n={n}",
             (bar.get_x() + bar.get_width() / 2, bar.get_height()),

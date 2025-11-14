@@ -1,6 +1,6 @@
 """Regenerate the synthetic CSVs in this folder.
 
-    python data/generate.py --seed 7
+python data/generate.py --seed 7
 """
 
 import sys

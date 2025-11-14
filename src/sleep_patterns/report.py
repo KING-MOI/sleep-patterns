@@ -1,6 +1,6 @@
 """Rebuild every chart in assets/ from the CSVs in data/.
 
-    python -m sleep_patterns.report
+python -m sleep_patterns.report
 """
 
 from pathlib import Path

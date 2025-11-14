@@ -36,7 +36,7 @@ def caffeine_correlations(merged, cols=("total_mg", "late_mg", "drinks")):
 
 def by_last_drink(merged, edges=(0, 12, 14, 16, 24)):
     """Mean sleep grouped by when the last caffeinated drink of the day was."""
-    labels = [f"{lo:02d}-{hi:02d}h" for lo, hi in zip(edges, edges[1:])]
+    labels = [f"{lo:02d}-{hi:02d}h" for lo, hi in zip(edges, edges[1:], strict=False)]
     bucket = pd.cut(merged["last_drink"], edges, labels=labels, right=False)
     bucket = bucket.cat.add_categories("none").fillna("none")
     return (
