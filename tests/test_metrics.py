@@ -1,6 +1,13 @@
 import pandas as pd
 
-from sleep_patterns.metrics import WEEKDAYS, sleep_debt, weekday_summary, worst_weekday
+from sleep_patterns.metrics import (
+    WEEKDAYS,
+    bedtime_spread,
+    sleep_debt,
+    social_jetlag,
+    weekday_summary,
+    worst_weekday,
+)
 
 
 def _nights(hours, start="2025-01-06"):
@@ -40,3 +47,17 @@ def test_sleep_debt_gap_does_not_count_as_rest():
     assert len(debt) == 14
     assert debt["deficit"].isna().sum() == 2
     assert debt["debt"].iloc[7] == 7.0
+
+
+def test_social_jetlag_is_weekend_minus_weekday_midsleep():
+    n = _nights([7.0] * 7)
+    n["midsleep"] = [27.0, 27.0, 27.0, 27.0, 29.0, 29.5, 27.0]
+    assert social_jetlag(n) == 29.25 - 27.0
+
+
+def test_bedtime_spread_in_minutes():
+    n = _nights([7.0] * 14)
+    n["bedtime"] = [23.0] * 7 + [24.0] * 7
+    spread = bedtime_spread(n)
+    assert list(spread.index) == WEEKDAYS
+    assert round(spread["Monday"], 1) == round(60 * 0.7071, 1)

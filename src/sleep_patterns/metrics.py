@@ -33,3 +33,14 @@ def sleep_debt(nights, target=7.5, window=14):
     out["debt"] = deficit.rolling(window, min_periods=window // 2).mean() * window
     out["cumulative"] = deficit.fillna(0).cumsum()
     return out
+
+
+def social_jetlag(nights, weekend=("Friday", "Saturday")):
+    """Hours between mean midsleep on free nights and on work nights."""
+    free = nights["weekday"].isin(weekend)
+    return nights.loc[free, "midsleep"].mean() - nights.loc[~free, "midsleep"].mean()
+
+
+def bedtime_spread(nights):
+    """Standard deviation of bedtime per weekday, in minutes."""
+    return (nights.groupby("weekday")["bedtime"].std() * 60).reindex(WEEKDAYS)
