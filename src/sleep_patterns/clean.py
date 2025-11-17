@@ -8,6 +8,10 @@ def add_derived(sleep):
     out["hours"] = (out["end"] - out["start"]).dt.total_seconds() / 3600
     out["night"] = (out["start"] - pd.Timedelta(hours=12)).dt.normalize()
     out["weekday"] = out["night"].dt.day_name()
+    # clock hours measured from the evening's midnight, so 00:30 is 24.5, not 0.5
+    out["bedtime"] = (out["start"] - out["night"]).dt.total_seconds() / 3600
+    out["waketime"] = (out["end"] - out["night"]).dt.total_seconds() / 3600
+    out["midsleep"] = (out["bedtime"] + out["waketime"]) / 2
     return out
 
 
