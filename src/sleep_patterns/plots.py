@@ -167,3 +167,30 @@ def cutoff_bars(buckets, ax=None):
     ax.set_title("Coffee after 2pm, shorter nights")
     ax.grid(axis="x", visible=False)
     return ax.figure
+
+
+def _clock(h):
+    hours, minutes = divmod(round(h * 60), 60)
+    return f"{hours % 24:02d}:{minutes:02d}"
+
+
+def sleep_window(nights, ax=None):
+    """Mean bedtime to mean wake time for each weekday."""
+    from .metrics import WEEKDAYS
+
+    w = nights.groupby("weekday")[["bedtime", "waketime"]].mean().reindex(WEEKDAYS)
+    ax = ax or plt.subplots(figsize=(8, 4))[1]
+    ys = range(len(w))
+    ax.barh(ys, w["waketime"] - w["bedtime"], left=w["bedtime"], color=BLUE, height=0.55)
+    for y, (bed, wake) in zip(ys, w.itertuples(index=False), strict=True):
+        ax.text(bed - 0.1, y, _clock(bed), ha="right", va="center", color=INK_2, fontsize=9)
+        ax.text(wake + 0.1, y, _clock(wake), ha="left", va="center", color=INK_2, fontsize=9)
+    ax.set_yticks(list(ys), [d[:3] for d in w.index])
+    ax.invert_yaxis()
+    lo, hi = int(w["bedtime"].min()) - 1, int(w["waketime"].max()) + 2
+    ax.set_xlim(lo, hi)
+    ticks = range(lo, hi + 1)
+    ax.set_xticks(list(ticks), [_clock(t) for t in ticks])
+    ax.grid(axis="y", visible=False)
+    ax.set_title("Average sleep window by night")
+    return ax.figure

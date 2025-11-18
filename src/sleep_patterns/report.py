@@ -25,6 +25,7 @@ def build(out=ASSETS):
         plots.save(plots.caffeine_scatter(merged), out / "caffeine.png"),
         plots.save(plots.calendar_heatmap(nights), out / "calendar.png"),
         plots.save(plots.cutoff_bars(by_last_drink(merged)), out / "caffeine_cutoff.png"),
+        plots.save(plots.sleep_window(nights), out / "sleep_window.png"),
     ]
 
 
